@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Nov  5 18:50:44 2024
+
+@author: PIETRA
+"""
+import numpy  as np
+import sympy as sp
+S1, S2, S3, S4, G1, G2 = sp.symbols('S1 S2 S3 S4 G1 G2')
+####Cálculo da energia despendida com trajetória Irrigação 2
+
+Dist_Reservatório = 758
+Dist_Canos_Conexões = 146
+Dist_Abraçadeiras = 14
+Dist_Cola = 14
+Dist_Fixadores = 14
+
+Massa_Reservatório = 540
+Massa_Canos_Conexões = 1432.5
+Massa_Abraçadeiras = 28
+Massa_Cola_Acetato = 6.8
+Massa_Cola_AcetatoEtila = 4.25
+Massa_Cola_Metiletilcetona = 5.95
+Massa_Fixadores = 48
+
+Transporte_Reservartório = (Massa_Reservatório/1000)*Dist_Reservatório
+Transporte_Canos_Conexões = (Massa_Canos_Conexões/1000)*Dist_Canos_Conexões
+Transporte_Abraçadeiras = (Massa_Abraçadeiras/1000)*Dist_Abraçadeiras
+Transporte_Cola = ((Massa_Cola_Acetato + Massa_Cola_AcetatoEtila + Massa_Cola_Metiletilcetona)/1000)*Dist_Cola
+Transporte_Fixadores = (Massa_Fixadores /1000)*Dist_Fixadores 
+
+#### Entradas de energia
+h_furadeira = 0.312
+h_iluminacão = 10.286
+
+Potencia_furadeiria = 0.4
+Potencia_iluminacao = 1.6
+
+Consumo_furadeira = h_furadeira*Potencia_furadeiria
+Consumo_iluminacao = h_iluminacão*Potencia_iluminacao
+
+
+#####Matriz A
+PolipropilenoKG = Massa_Reservatório + Massa_Canos_Conexões + Massa_Abraçadeiras + Massa_Cola_Acetato + Massa_Cola_AcetatoEtila + Massa_Cola_Metiletilcetona
+AçoKg = Massa_Fixadores
+TransporteTkm = Transporte_Abraçadeiras + Transporte_Canos_Conexões +  Transporte_Cola + Transporte_Fixadores + Transporte_Reservartório
+Água = 9.6
+Matriz_A = sp.Matrix([[PolipropilenoKG, 0, 0, 0],[0, AçoKg, 0, 0], [0, 0, TransporteTkm, 0], [0, 0, 0, 9.6]])
+
+CO2 = [0.063, 0.042, 0.12, 0] #Polipropileno, Aço, Transporte, Tratamento de Água
+SO2 = [0, 6.34*10**-5, 5.76*10**-4, 0] #idem
+Matriz_B = sp.Matrix([[CO2[0], CO2[1], CO2[2], CO2[3]],[SO2[0], SO2[1], SO2[2], SO2[3]]])
+
+#Evitar erros de inicialização com sp
+Matriz_S_teorica = sp.Matrix([[S1], [S2], [S3], [S4]])
+Matriz_G_teorica = sp.Matrix([[G1], [G2]])
+#Matriz F
+Matriz_F = sp.Matrix([[0], [0], [0], [1]])
+A_inv = Matriz_A.inv()
+Matriz_S_teorica = A_inv*Matriz_F
+#print(Matriz_S_teorica)
+Matriz_G_teorica = Matriz_B*Matriz_S_teorica
